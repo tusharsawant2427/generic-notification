@@ -3,7 +3,6 @@ namespace App\GenericNotification\Notification\Services\Sms;
 
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
-use Mockery;
 use PHPUnit\Framework\MockObject\MockObject;
 use Tests\TestCase;
 

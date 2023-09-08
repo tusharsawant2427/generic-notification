@@ -34,7 +34,7 @@ class MailBody implements MailBodyInterface
 
     public int $type;
 
-    public int $status = StatusType::SENT;
+    public int $status = StatusType::IN_PROCESS;
 
     public int $medium = MediumType::MAIL;
 

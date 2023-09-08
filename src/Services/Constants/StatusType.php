@@ -3,8 +3,9 @@ namespace App\GenericNotification\Notification\Services\Constants;
 
 class StatusType
 {
-    const SENT = 0;
-    const DELIVERED = 1;
-    const OPEN = 2;
-    const FAILED = 3;
+    const IN_PROCESS = 0;
+    const IN_QUEUE = 1;
+    const SENT = 2;
+    const OPEN = 3;
+    const FAILED = 4;
 }

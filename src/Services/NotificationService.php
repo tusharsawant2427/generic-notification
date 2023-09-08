@@ -17,38 +17,30 @@ use Throwable;
 class NotificationService
 {
 
-    public GenericNotifiableInterface $genericNotifiableInterface;
-
-    public function __construct(GenericNotifiableInterface $genericNotifiableInterface)
-    {
-        $this->genericNotifiableInterface = $genericNotifiableInterface;
-    }
-
     /**
      * notify
      *
-     * @return bool
+     * @param GenericNotifiableInterface $genericNotifiableInterface
      * @throws NotificationBodyNotFoundException
      */
-    public function notify(): bool
+    public static function notify(GenericNotifiableInterface $genericNotifiableInterface)
     {
-        if ($this->genericNotifiableInterface instanceof MailBodyInterface) {
-            return $this->sendMail($this->genericNotifiableInterface);
-        } elseif ($this->genericNotifiableInterface instanceof SmsBodyInterface) {
-            return $this->sendSms($this->genericNotifiableInterface);
+        if ($genericNotifiableInterface instanceof MailBodyInterface) {
+            static::sendMail($genericNotifiableInterface);
+        } elseif ($genericNotifiableInterface instanceof SmsBodyInterface) {
+            static::sendSms($genericNotifiableInterface);
         } else {
             throw new NotificationBodyNotFoundException();
         }
     }
 
     /**
-     * sendMail
+     * sendMail.
      *
-     * @param  MailBodyInterface $mailBody
-     * @return bool
+     * @param MailBodyInterface $mailBody
      * @throws Exception
      */
-    public function sendMail(MailBodyInterface $mailBody): bool
+    private static function sendMail(MailBodyInterface $mailBody)
     {
         try {
             MailJob::dispatch(new GenericMail($mailBody));
@@ -56,17 +48,15 @@ class NotificationService
             Log::error($exception->getTraceAsString());
             throw $exception;
         }
-        return true;
     }
 
     /**
      * sendSms
      *
-     * @param  SmsBodyInterface $smsBody
-     * @return bool
+     * @param SmsBodyInterface $smsBody
      * @throws Throwable
      */
-    public function sendSms(SmsBodyInterface $smsBody): bool
+    private static function sendSms(SmsBodyInterface $smsBody)
     {
         try {
             SmsJob::dispatch(new GenericSms($smsBody));
@@ -74,6 +64,5 @@ class NotificationService
             Log::error($exception->getTraceAsString());
             throw $exception;
         }
-        return true;
     }
 }

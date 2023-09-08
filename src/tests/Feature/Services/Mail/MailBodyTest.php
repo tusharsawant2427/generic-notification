@@ -27,7 +27,7 @@ class MailBodyTest extends TestCase
         $this->assertEquals($subject, $mailBody->getSubject());
         $this->assertEquals($message, $mailBody->getMessage());
         $this->assertEquals(GenericNotificationType::GENERAL, $mailBody->getType());
-        $this->assertEquals(StatusType::SENT, $mailBody->getStatus());
+        $this->assertEquals(StatusType::IN_PROCESS, $mailBody->getStatus());
         $this->assertEquals(MediumType::MAIL, $mailBody->getMedium());
         $this->assertIsArray($mailBody->getData());
         $this->assertNotEmpty($mailBody->getUniqueIdentifier());
@@ -48,7 +48,7 @@ class MailBodyTest extends TestCase
         $this->assertEquals($subject, $mailBody->getSubject());
         $this->assertEquals($message, $mailBody->getMessage());
         $this->assertEquals($type, $mailBody->getType());
-        $this->assertEquals(StatusType::SENT, $mailBody->getStatus());
+        $this->assertEquals(StatusType::IN_PROCESS, $mailBody->getStatus());
         $this->assertEquals(MediumType::MAIL, $mailBody->getMedium());
         $this->assertIsArray($mailBody->getData());
         $this->assertNotEmpty($mailBody->getUniqueIdentifier());

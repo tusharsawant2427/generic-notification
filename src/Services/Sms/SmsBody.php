@@ -14,7 +14,7 @@ class SmsBody implements SmsBodyInterface
     public string $message;
     public string $smsProvider = SmsServiceConstant::SMS_24X7_PROVIDER;
     public int $type;
-    public int $status = StatusType::SENT;
+    public int $status = StatusType::IN_PROCESS;
     public int $medium = MediumType::SMS;
 
     /**

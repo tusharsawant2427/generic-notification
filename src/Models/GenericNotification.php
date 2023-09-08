@@ -7,19 +7,33 @@ use App\GenericNotification\Notification\Services\Constants\StatusType;
 use App\Helpers\Services\Utils;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use OwenIt\Auditing\Auditable;
 
-class GenericNotification extends Model implements GenericNotificationConstant
+class GenericNotification extends Model implements \OwenIt\Auditing\Contracts\Auditable, GenericNotificationConstant
 {
+    use Auditable;
+
     protected $fillable = ['identifier', 'type', 'medium', 'event', 'data', 'sent_at', 'status', 'created_by', 'description', 'opened_at'];
 
+    protected $casts =[
+        'data' => 'array'
+    ];
     /**
      * getCreateValidationRules
      *
      * @return array<string,string>
      */
-    public static function getCreateValidationRules(): array {
+    public static function getCreateValidationRules(): array
+    {
         return self::CREATE_RULE;
     }
+
+
+    public static function findByJobUuid($uuid)
+    {
+        return static::whereJsonContains('data->job_uuid', $uuid)->first();
+    }
+
 
     /**
      * persistCreateGenericNotification
@@ -34,27 +48,31 @@ class GenericNotification extends Model implements GenericNotificationConstant
     }
 
     /**
-     * updateOpenAt
+     * updateNotificationOpenCount
      *
      * @return bool
      */
-    public function updateOpenAtAndOpenStatus(): bool
+    public function updateNotificationOpenCount(): bool
     {
         return $this->update([
             'opened_at' => Carbon::now(),
-            'status' => StatusType::OPEN
+            'status' => StatusType::OPEN,
+            'open_count' => $this->increment('open_count')
         ]);
     }
 
     /**
-     * incrementOpenCount
+     * updateStatus
      *
+     * @param  int $status
      * @return bool
      */
-    public function incrementOpenCount(): bool
+    public function updateStatus(int $status, ?array $data = null): bool
     {
-        return $this->update([
-            'open_count' => $this->increment('open_count')
-        ]);
+        $this->status = $status;
+        if (!empty($data)) {
+            $this->data = $data;
+        }
+        return $this->save();
     }
 }

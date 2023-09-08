@@ -21,13 +21,13 @@ return new class extends Migration
             $table->string('event')->nullable(); // the event that triggered this notification, names are assigned to each event
             $table->json('data')->comment("differs for every medium"); // the data to be sent, differs for every medium
             $table->timestamp('sent_at')->nullable();
-            $table->unsignedTinyInteger('status')->default(0)->comment("(0)sent, (1)delivered, (2)open, (3)failed"); // sent, delivered, open
+            $table->unsignedTinyInteger('status')->default(0)->comment("(0)in-process, (1)in-queue, (2)sent, (3)open, (4)failed"); // in-process, in-queue, sent, open
             $table->unsignedBigInteger('created_by')->nullable();
-            $table->softDeletes();
-            $table->timestamps();
             $table->text('description')->nullable();
             $table->timestamp('opened_at')->nullable();
             $table->unsignedBigInteger('open_count')->default(0);
+            $table->softDeletes();
+            $table->timestamps();
         });
     }
 

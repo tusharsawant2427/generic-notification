@@ -2,28 +2,20 @@
 
 namespace App\GenericNotification\Notification\Jobs;
 
+use App\GenericNotification\Notification\Jobs\NotificationJob;
+use App\GenericNotification\Notification\Models\GenericNotification;
 use App\GenericNotification\Notification\Services\Constants\StatusType;
-use App\GenericNotification\Notification\Services\GenericNotificationService;
+use App\GenericNotification\Notification\Services\Interfaces\GenericNotifiableInterface;
 use App\GenericNotification\Notification\Services\Mail\GenericMail;
 use App\GenericNotification\Notification\Services\Mail\MailBody;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Mail\Mailable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Throwable;
 
-class MailJob implements ShouldQueue
+class MailJob extends NotificationJob
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    const JOB_UUID_KEY = "job_uuid";
 
-    /**
-     * Create a new job instance.
-     *
-     * @return void
-     */
     protected Mailable $mailable;
 
     /**
@@ -34,38 +26,43 @@ class MailJob implements ShouldQueue
         $this->mailable = $mailable;
     }
 
+
     /**
-     * Execute the job.
+     * sendToQueue
      *
      * @return void
      */
-    public function handle(): void
+    protected function sendToQueue(GenericNotification $genericNotification)
     {
-        $genericNotificationService = new GenericNotificationService();
-
-        /**
+         /**
          * @var GenericMail $mailable
          */
         $mailable = $this->mailable;
 
-        /**
-         * @var MailBody $mailBody
-         */
-        $mailBody = $mailable->getMailBody();
+        Mail::to($mailable->getMailBody()->getEmails())
+            ->cc($mailable->getMailBody()->getCcEmails())
+            ->queue($mailable);
 
-        /** It will give an html content */
-        $mailBody->setHtmlContent($this->mailable->render());
-        try {
-            Mail::to($mailBody->getEmails())
-                ->cc($mailBody->getCcEmails())
-                ->queue($this->mailable);
-            $genericNotificationService->store($mailBody);
-        } catch (Throwable $ex) {
+        $genericNotification->updateStatus(StatusType::IN_QUEUE);
 
-            $mailBody->setStatus(StatusType::FAILED);
-            $genericNotificationService->store($mailBody);
+        Log::info("GenericNotification Notification Job Status: ". $genericNotification->status);
 
-            throw $ex;
-        }
     }
+
+    /**
+     * getNotificationBody
+     *
+     * @return GenericNotifiableInterface
+     */
+    protected function getNotificationBody(): GenericNotifiableInterface
+    {
+        /**
+         * @var  MailBody $mailBody
+         */
+        $mailBody = $this->mailable->getMailBody();
+        $mailBody->setHtmlContent($this->mailable->render());
+        $mailBody->setData(self::JOB_UUID_KEY, $this->getUuid());
+        return $mailBody;
+    }
+
 }

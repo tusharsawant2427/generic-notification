@@ -25,7 +25,7 @@ class SmsBodyTest extends TestCase
         $this->assertEquals($message, $smsBody->getMessage());
         $this->assertEquals(SmsServiceConstant::SMS_24X7_PROVIDER, $smsBody->getSmsProvider());
         $this->assertEquals(GenericNotificationType::GENERAL, $smsBody->getType());
-        $this->assertEquals(StatusType::SENT, $smsBody->getStatus());
+        $this->assertEquals(StatusType::IN_PROCESS, $smsBody->getStatus());
         $this->assertEquals(MediumType::SMS, $smsBody->getMedium());
         $this->assertIsArray($smsBody->getData());
         $this->assertNotEmpty($smsBody->getUniqueIdentifier());
@@ -44,7 +44,7 @@ class SmsBodyTest extends TestCase
         $this->assertEquals($message, $smsBody->getMessage());
         $this->assertEquals(SmsServiceConstant::SMS_24X7_PROVIDER, $smsBody->getSmsProvider());
         $this->assertEquals($type, $smsBody->getType());
-        $this->assertEquals(StatusType::SENT, $smsBody->getStatus());
+        $this->assertEquals(StatusType::IN_PROCESS, $smsBody->getStatus());
         $this->assertEquals(MediumType::SMS, $smsBody->getMedium());
         $this->assertIsArray($smsBody->getData());
         $this->assertNotEmpty($smsBody->getUniqueIdentifier());

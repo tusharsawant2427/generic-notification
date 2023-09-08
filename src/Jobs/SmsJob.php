@@ -2,25 +2,21 @@
 
 namespace App\GenericNotification\Notification\Jobs;
 
+use App\GenericNotification\Notification\Jobs\NotificationJob;
+use App\GenericNotification\Notification\Models\GenericNotification;
 use App\GenericNotification\Notification\Services\Constants\StatusType;
-use App\GenericNotification\Notification\Services\GenericNotificationService;
+use App\GenericNotification\Notification\Services\Interfaces\GenericNotifiableInterface;
 use App\GenericNotification\Notification\Services\Interfaces\SmsBodyInterface;
 use App\GenericNotification\Notification\Services\Interfaces\SmsServiceInterface;
 use App\GenericNotification\Notification\Services\Sms\GenericSms;
-use App\GenericNotification\Notification\Services\Sms\SmsBody;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
-use Throwable;
+use Illuminate\Support\Facades\Log;
 
-class SmsJob implements ShouldQueue
+class SmsJob extends NotificationJob
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-
+    const JOB_UUID_KEY = "job_uuid";
     const URL_KEY = "sms_url";
     const SMS_SERVICE_NAME_KEY = "sms_service_name";
+
     /**
      * Create a new job instance.
      *
@@ -38,31 +34,39 @@ class SmsJob implements ShouldQueue
         $this->sms = $sms;
         $this->smsService = $sms->loadSmsService();
         $this->smsBody = $this->smsService->getSmsBody();
+        $this->setAdditionalDataToSmsBody();
     }
 
+
     /**
-     * Execute the job.
+     * sendToQueue
      *
      * @return void
      */
-    public function handle()
+    public function sendToQueue(GenericNotification $genericNotification)
     {
-        $genericNotificationService = new GenericNotificationService();
         /**
          * @var SmsServiceInterface $smsService
          */
         $smsService = $this->getSmsService();
-        $this->setAdditionalData();
-        try {
 
-            $smsService->send();
-            $genericNotificationService->store($this->getSmsBody());
-        } catch (Throwable $ex) {
 
-            $this->getSmsBody()->setStatus(StatusType::FAILED);
-            $genericNotificationService->store($this->getSmsBody());
-            throw $ex;
-        }
+        $smsService->send();
+
+        $genericNotification->updateStatus(StatusType::IN_QUEUE);
+
+        Log::info("GenericNotification Notification Job Status: " . $genericNotification->status);
+    }
+
+    /**
+     * getNotificationBody
+     *
+     * @return GenericNotifiableInterface
+     */
+    protected function getNotificationBody(): GenericNotifiableInterface
+    {
+        $this->getSmsBody()->setData(key: self::JOB_UUID_KEY, value: $this->getUuid());
+        return $this->getSmsBody();
     }
 
     /**
@@ -91,11 +95,11 @@ class SmsJob implements ShouldQueue
     }
 
     /**
-     * setAdditionalData
+     * setAdditionalDataToSmsBody
      *
      * @return void
      */
-    public function setAdditionalData()
+    private function setAdditionalDataToSmsBody()
     {
         $messageUrl = ($this->getSmsService()->getMessageUrl()) ? $this->getSmsService()->getMessageUrl() : '';
         $serviceName = ($this->getSmsService()->getServiceName()) ? $this->getSmsService()->getServiceName() : '';
