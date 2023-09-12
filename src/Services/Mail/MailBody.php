@@ -10,7 +10,7 @@ use App\GenericNotification\Notification\Services\Interfaces\MailBodyInterface;
 class MailBody implements MailBodyInterface
 {
 
-    public const DEFAULT_CC_MAIL = "notifications@quillplus.in";
+    public const DEFAULT_CC_MAIL = "notifications@exaple.in";
     public const TRACKING_HTML_TAG = "<img src='%s' width='%s' height='%s' />";
 
     private string $subject;
